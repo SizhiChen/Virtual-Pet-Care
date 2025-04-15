@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
-import pet.helper.mood.HappyBehavior;
 import pet.helper.HealthStatus;
+import pet.helper.mood.HappyBehavior;
 import pet.helper.mood.MoodBehavior;
 import pet.helper.mood.SadBehavior;
 

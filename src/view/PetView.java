@@ -385,7 +385,8 @@ public class PetView extends JFrame {
         continue;
       }
       ImageIcon rawIcon = new ImageIcon(url);
-      Image scaledImage = rawIcon.getImage().getScaledInstance(IMAGE_WIDTH, IMAGE_HEIGHT, Image.SCALE_SMOOTH);
+      Image scaledImage = rawIcon.getImage().getScaledInstance(IMAGE_WIDTH,
+          IMAGE_HEIGHT, Image.SCALE_SMOOTH);
       images[i] = new ImageIcon(scaledImage);
     }
   }

@@ -1,6 +1,8 @@
 package pet;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 import pet.helper.personality.Personality;
 import pet.helper.personality.PersonalityInterface;
