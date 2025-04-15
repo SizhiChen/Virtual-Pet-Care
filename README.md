@@ -57,7 +57,8 @@ The simulation supports:
 - ✅ Progress bar and timer for action feedback
 
 ### ✅ Technical
-- ✅ Follows the **Model-View-Controller (MVC)** design pattern
+- ✅ Follows the **Model-View-Controller (MVC)** design pattern 
+- ✅ Fully self-contained JAR — no need to distribute image folders separately
 - ✅ Modular code structure for scalability and readability
 - ✅ Full **JUnit 4** test coverage for core logic
 - ✅ Clamp function prevents stat overflow or underflow (0–100)
@@ -65,8 +66,35 @@ The simulation supports:
 
 ## 🚀 How to Run
 
-This project is packaged into an executable JAR file named `Minimal API.jar`.  
-To run the virtual pet simulator, make sure the required image assets are in the correct location relative to the JAR file.
+This project is packaged into a self-contained executable JAR file: `Minimal API.jar`.  
+All image assets are embedded directly into the JAR file, so no additional image folders are required at runtime.
+
+---
+
+### 🧱 Prerequisites
+
+- Java 8 or higher installed on your system
+- Any operating system that supports Java (Windows, macOS, Linux)
+
+---
+
+### ▶️ Run by Double-Click
+
+1. Locate the `Minimal API.jar` file (e.g., in your `res/` or output folder)
+2. Double-click it
+3. The game window should launch automatically 🎉
+
+> ⚠️ If nothing happens, make sure `.jar` files are associated with the Java runtime on your system.
+
+---
+
+### 💻 Run from Terminal (Alternative)
+
+If double-click doesn’t work, you can run it manually:
+
+```bash
+java -jar "Minimal API.jar"
+```
 
 ## 📁 Project Structure
 
@@ -74,13 +102,19 @@ Make sure your folder looks like this:
 
 ```plaintext
 your-folder/
-├── res/
-│   ├── Minimal API.jar
+├── resources/            ← Resources are now embedded in the JAR
 │   └── images/
 │       ├── default/
 │       ├── interact/
 │       ├── sad/
-│       └── ... (other image folders used in the game)
+│       └── ...
+├── res/
+│   └── Minimal API.jar   ← JAR file
+├── src/                  ← Java source code
+├── test/
+│   └── pet               ← JUnit4 test code
+│       ├── PetTest/
+│       └── ...
 ```
 
 ## 🕹️ How to Use the Program
@@ -91,15 +125,15 @@ Once the program starts, the pet will appear on screen along with several button
 
 You can take care of your pet by clicking the following buttons:
 
-| Button      | Action Description                            |
-|-------------|-----------------------------------------------|
-| 🧼 Shower!!  | Cleans the pet (increases hygiene)            |
-| 🍗 Feed!!    | Feeds the pet (increases hunger stat)         |
-| 🧸 Play!!    | Plays with the pet (increases social stat)     |
-| 😴 Sleep!!   | Puts the pet to sleep (increases sleep stat)   |
-| 🔄 RESET     | Resets the game and restarts with a new pet    |
-| 👣 STEP      | Forces one step of time to simulate need decay |
-| 📊 SHOW      | Displays the live status bar of all needs      |
+| Button      | Action Description                             |
+|-------------|------------------------------------------------|
+| 🧼 Shower!! | Cleans the pet (increases hygiene)             |
+| 🍗 Feed!!   | Feeds the pet (increases hunger stat)          |
+| 🧸 Play!!   | Plays with the pet (increases social stat)     |
+| 😴 Sleep!!  | Puts the pet to sleep (increases sleep stat)   |
+| 🔄 RESET    | Resets the game and restarts with a new pet    |
+| 👣 STEP     | Forces one step of time to simulate need decay |
+| 📊 SHOW     | Displays the live status bar of all needs      |
 
 > Tip: Hover your mouse over buttons to see if they’re clickable — they’ll change the cursor to a hand.
 
@@ -218,52 +252,55 @@ These design changes were essential to evolve the project from a simple simulati
 
 ## 📌 Assumptions
 
-The following assumptions were made during the design and implementation of this project. All assumptions are aligned with the project requirements and aim to support a consistent and enjoyable user experience.
+The following assumptions were made during the design and development of this project. All are consistent with project requirements and contribute to a clear, self-contained game experience.
 
 ---
 
-### 🎮 Game Mechanics
+### 🎮 Game Logic
 
-- All pet needs (hunger, hygiene, social, sleep) range from **0 to 100**
-    - Values are clamped using a `clamp()` method to ensure they stay within bounds
-- Each pet begins the game with all stats initialized to **50**
-- Pet mood is **HAPPY** when all needs are above 20; **SAD** when any need is ≤ 20
-- Pet dies immediately if **any need reaches 0**
-- The `step()` method is called every 10 seconds (or manually via the STEP button)
+- The pet has four core needs: **hunger**, **hygiene**, **social**, and **sleep**
+- All stats range from **0 to 100**, and are clamped to stay within this range
+- The game starts with all stats initialized to **50**
+- A new "step" (time unit) occurs every 10 seconds or manually via the STEP button
+- If **any stat drops to 0**, the pet dies
+- If **any stat is 20 or lower**, the pet becomes **SAD**
+- The pet is considered **HAPPY** only when all needs are above 20
 
 ---
 
 ### 🧠 Personality System
 
-- A pet is assigned a **random personality** at the start of each game (or reset)
-- Personalities are represented by enum values, each with unique `modifyStep()` and `applyPersonalityInteract()` logic
-- There is **no way to choose or change the personality manually** during normal gameplay
-- `setPersonality()` exists only for testing purposes
+- Pets are assigned a **random personality** (e.g., Lazy, Energetic, Glutton) on game start or reset
+- Personality affects:
+  - Passive stat decay (`step()`)
+  - The effect of user interactions (`interactWith()`)
+- The player cannot manually select or change a pet’s personality during gameplay
+- A `setPersonality()` method exists only for testing purposes
+
+---
+
+### 🖼️ Resources and UI
+
+- All images are **embedded in the JAR** using IntelliJ’s Resources Root
+- Image resources are loaded via `getClass().getResource(...)`
+- The game window uses fixed dimensions and is not resizable
+- Thought bubble hints are shown when stats fall below the mood threshold
+- Visual feedback (progress bar, animations) helps indicate action success
 
 ---
 
 ### 🧪 Testing
 
-- `setMood()` and `setPersonality()` were added for **unit testing control**
-- All public interface methods are thoroughly tested using **JUnit 4**
-- Randomness in `SmartPersonality` is tested using deterministic mocks
+- Testing is focused on the **model and controller layers**
+- GUI components are not unit tested due to the complexity of Swing
+- `setMood()` and `setPersonality()` are exposed only for test injection
 
 ---
 
-### 🖼️ User Interface
-
-- Image resources are loaded from an `images/` directory that must exist next to the JAR file
-- Animations rely on a set of images indexed numerically (e.g., `0.png`, `1.png`, etc.)
-- Pet's visual representation changes with actions and mood
-- Mood and personality are shown in text labels at the top-left of the GUI
-
----
-
-### 💡 Miscellaneous
+### 💻 Runtime
 
 - No command-line arguments are required or supported
-- The program is a **single-player** experience with no external input or server dependency
-- The game only uses standard Java and Swing libraries (no third-party dependencies)
+- The JAR is fully self-contained and portable across platforms with Java installed
 
 ## ⚠️ Limitations
 
@@ -286,7 +323,6 @@ While the program successfully implements core gameplay features and behavior cu
     - It is not compatible with mobile or web environments
 - Pet image flickering may occur briefly during fast interactions or repeated actions
 - Button visuals and UI scaling are not optimized for high-DPI or 4K screens
-- If the `images/` directory is missing or renamed, the program may crash or show a blank pet
 
 ---
 
@@ -318,11 +354,11 @@ Despite these limitations, the core mechanics — including mood, need decay, pe
 
 ## 📚 Citations
 
-All code in this project was written independently using course materials and standard Java documentation.
+All source code in this project was written independently using standard Java libraries and course-provided materials.
 
-All visual assets (including pet images, action animations, and UI graphics) were **originally generated by ChatGPT (OpenAI's image generation feature)** and are free for use in this project.
+All visual assets (including pet animations, interaction images, and UI icons) were **generated using ChatGPT's image generation feature** and are free to use within this project.
 
-No external websites, libraries, or publications were referenced for implementation logic or visual content.
+No external libraries, tutorials, or websites were used in the development or implementation of this program.
 
 ## 📚 Citations
 
