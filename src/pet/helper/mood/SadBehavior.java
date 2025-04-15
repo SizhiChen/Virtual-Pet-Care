@@ -2,6 +2,7 @@ package pet.helper.mood;
 
 import pet.Pet;
 import pet.PetInterface;
+import pet.PetOld;
 
 /**
  * The {@code SadBehavior} class defines how a pet's needs change over time
@@ -23,7 +24,7 @@ public class SadBehavior implements MoodBehavior {
    * @param pet the {@link PetInterface} instance to apply the mood effect to
    */
   @Override
-  public void applyMoodEffect(PetInterface pet) {
+  public void applyMoodEffect(PetOld pet) {
     pet.adjustNeeds(
         SAD_NEED_DEGRADATION,
         SAD_NEED_DEGRADATION,

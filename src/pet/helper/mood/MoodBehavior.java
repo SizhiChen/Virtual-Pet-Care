@@ -1,6 +1,7 @@
 package pet.helper.mood;
 
 import pet.PetInterface;
+import pet.PetOld;
 
 /**
  * The {@code MoodBehavior} interface defines a strategy for how a pet's needs
@@ -19,5 +20,5 @@ public interface MoodBehavior {
    *
    * @param pet the {@link PetInterface} instance to apply the mood effect to
    */
-  void applyMoodEffect(PetInterface pet);
+  void applyMoodEffect(PetOld pet);
 }

@@ -17,16 +17,12 @@ public class MyPetMain {
    * @param args command-line arguments (not used)
    */
   public static void main(String[] args) {
-    PetInterface pet = new PetOld();
-    pet.startGame();
+    PetOld pet = new PetOld();
     Scanner scanner = new Scanner(System.in);
 
     printMenu();
 
     while (scanner.hasNext()) {
-      if (!pet.isAlive()) {
-        break;
-      }
       String command = scanner.next();
       int times = scanner.nextInt();
 
@@ -64,6 +60,10 @@ public class MyPetMain {
           continue;
       }
 
+      if (!pet.isAlive()) {
+        break;
+      }
+
       System.out.println("Updated Pet Status: " + pet.getHealth());
       System.out.println("Current Mood: " + pet.getMood());
     }
@@ -89,7 +89,7 @@ public class MyPetMain {
    * @param pet   the pet to interact with
    * @param steps the number of steps to simulate
    */
-  private static void runSimulation(PetInterface pet, int steps) {
+  private static void runSimulation(PetOld pet, int steps) {
     for (int i = 0; i < steps; i++) {
       pet.step();
       if (i % 5 == 0) {

@@ -1,19 +1,18 @@
 package pet;
 
 import pet.helper.Action;
-import pet.helper.mood.HappyBehavior;
 import pet.helper.HealthStatus;
+import pet.helper.mood.HappyBehavior;
 import pet.helper.mood.MoodBehavior;
 import pet.helper.mood.MoodEnum;
 import pet.helper.mood.SadBehavior;
-import pet.helper.personality.Personality;
 
 /**
  * The {@code Pet} class represents the internal model of a virtual pet.
  * It tracks the pet's core needs (hunger, hygiene, social, sleep),
  * mood, and alive status. The pet's state changes over time and through interactions.
  */
-public class PetOld implements PetInterface {
+public class PetOld {
   private static final int INITIAL_STATE = 50;
 
   /**
@@ -52,18 +51,10 @@ public class PetOld implements PetInterface {
   private MoodBehavior moodBehavior;
 
   /**
-   * Default constructor that leaves the pet uninitialized.
-   * Call startView() to initialize the pet.
+   * Default constructor that initializes the pet's needs to a default value
+   * and sets the initial mood to HAPPY.
    */
   public PetOld() {
-  }
-
-  /**
-   * Initializes the pet's needs and sets its initial mood.
-   * This must be called before using the pet.
-   */
-  @Override
-  public void startGame() {
     this.hunger = INITIAL_STATE;
     this.hygiene = INITIAL_STATE;
     this.social = INITIAL_STATE;
@@ -77,7 +68,6 @@ public class PetOld implements PetInterface {
    * This triggers mood-based behavior and can cause the pet’s needs to degrade.
    * Also checks for potential mood and health updates.
    */
-  @Override
   public void step() {
     if (!alive) {
       return;
@@ -93,7 +83,6 @@ public class PetOld implements PetInterface {
    *
    * @param action the {@link Action} enum representing the type of interaction
    */
-  @Override
   public void interactWith(Action action) {
     if (!alive) {
       return;
@@ -102,27 +91,27 @@ public class PetOld implements PetInterface {
     switch (action) {
       case FEED:
         hunger = clamp(hunger + 40);
-        hygiene = clamp(hygiene - 4);
-        social = clamp(social - 4);
-        sleep = clamp(sleep - 4);
+        hygiene = clamp(hygiene - 8);
+        social = clamp(social - 2);
+        sleep = clamp(sleep - 2);
         break;
       case PLAY:
         social = clamp(social + 30);
-        hunger = clamp(hunger - 4);
-        hygiene = clamp(hygiene - 4);
-        sleep = clamp(sleep - 4);
+        hunger = clamp(hunger - 8);
+        hygiene = clamp(hygiene - 8);
+        sleep = clamp(sleep - 8);
         break;
       case CLEAN:
         hygiene = clamp(hygiene + 80);
-        hunger = clamp(hunger - 4);
-        social = clamp(social - 4);
-        sleep = clamp(sleep - 4);
+        hunger = clamp(hunger - 5);
+        social = clamp(social - 5);
+        sleep = clamp(sleep - 5);
         break;
       case SLEEP:
-        sleep = clamp(sleep + 40);
-        hunger = clamp(hunger - 4);
-        social = clamp(social - 4);
-        hygiene = clamp(hygiene - 4);
+        sleep = clamp(sleep + 80);
+        hunger = clamp(hunger - 30);
+        social = clamp(social - 30);
+        hygiene = clamp(hygiene - 10);
         break;
       default:
         break;
@@ -138,7 +127,6 @@ public class PetOld implements PetInterface {
    *
    * @return the pet's current health status
    */
-  @Override
   public HealthStatus getHealth() {
     return new HealthStatus(hunger, hygiene, social, sleep);
   }
@@ -148,14 +136,8 @@ public class PetOld implements PetInterface {
    *
    * @return the current {@link MoodEnum} of the pet
    */
-  @Override
   public MoodEnum getMood() {
     return mood;
-  }
-
-  @Override
-  public Personality getPersonality() {
-    return null;
   }
 
   /**
@@ -163,7 +145,6 @@ public class PetOld implements PetInterface {
    *
    * @param mood the new mood to set
    */
-  @Override
   public void setMood(MoodEnum mood) {
     this.mood = mood;
     switch (mood) {
@@ -176,31 +157,6 @@ public class PetOld implements PetInterface {
       default:
         break;
     }
-  }
-
-  @Override
-  public boolean isAlive() {
-    return alive;
-  }
-
-  @Override
-  public boolean needShower() {
-    return hygiene <= 20;
-  }
-
-  @Override
-  public boolean needFeed() {
-    return hunger <= 20;
-  }
-
-  @Override
-  public boolean needPlay() {
-    return social <= 20;
-  }
-
-  @Override
-  public boolean needSleep() {
-    return sleep <= 20;
   }
 
   /**
@@ -219,12 +175,29 @@ public class PetOld implements PetInterface {
     sleep = clamp(sleep + sleepDelta);
   }
 
+  public boolean isAlive() {
+    return alive;
+  }
+
   /**
    * Updates the pet's mood based on current needs.
    * If any need is below 20, the pet becomes SAD. Otherwise, it is HAPPY.
    */
   private void updateMood() {
-    if (hunger <= 20 || hygiene <= 20 || social <= 20 || sleep <= 20) {
+    if (hunger < 20 || hygiene < 20 || social < 20 || sleep < 20) {
+      System.out.println("Your pet is Sad, please take care of them!!");
+      if (hunger < 20) {
+        System.out.println("Pet need to feed");
+      }
+      if (hygiene < 20) {
+        System.out.println("Pet need to clean");
+      }
+      if (social < 20) {
+        System.out.println("Pet need to play");
+      }
+      if (sleep < 20) {
+        System.out.println("Pet need to sleep");
+      }
       setMood(MoodEnum.SAD);
     } else {
       setMood(MoodEnum.HAPPY);

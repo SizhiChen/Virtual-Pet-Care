@@ -21,13 +21,22 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import javax.swing.plaf.basic.BasicProgressBarUI;
+
 import pet.helper.Action;
 import pet.helper.HealthStatus;
 import pet.helper.mood.MoodEnum;
 
 public class PetView extends JFrame {
 
+  private static final int INTERACT_FRAME_DELAY = 500;
+  private static final int INTERACT_DURATION = 10;
+  private static final int IMAGE_WIDTH = 600;
+  private static final int IMAGE_HEIGHT = 600;
+  private static final int BUBBLE_SIZE = 100;
+
   private boolean usingShowAdapter = true;
+
   private final JLabel imageLabel = new JLabel();
   private final JLabel gameStart = new JLabel();
   private final JLabel moodLabel = new JLabel();
@@ -85,8 +94,8 @@ public class PetView extends JFrame {
     defaultImageIndex = (defaultImageIndex + 1) % defaultImages.length;
     imageLabel.setIcon(defaultImages[defaultImageIndex]);
   });
-  private final Timer statusTimer = new Timer(10, e -> displayStatus());
-  private final Timer moodTimer = new Timer(10, e -> moodLabel.setText(getMood()));
+  private final Timer statusTimer = new Timer(INTERACT_DURATION, e -> displayStatus());
+  private final Timer moodTimer = new Timer(INTERACT_DURATION, e -> moodLabel.setText(getMood()));
   private final Timer stepTimer = new Timer(10000, e -> step()); // every 10 secs
   private int interactImageIndex = 0;
   private int progressBarValue;
@@ -138,65 +147,71 @@ public class PetView extends JFrame {
 
   private void setView() {
     this.getContentPane().removeAll();
+    setupLayeredPane();
+    setupBubbleHints();
+    setupInfoLabels();
+    setupButtons();
+    setupProgressBar();
+    setGameStartButton();
+    this.getContentPane().add(layeredPane);
+    this.getContentPane().add(buttonPane, BorderLayout.SOUTH);
+    buttonPane.setOpaque(false);
+  }
 
-    // set layeredPane
-    layeredPane.setPreferredSize(new Dimension(600, 600));
-    // set imageLabel
-    imageLabel.setBounds(0, 80, 600, 600);
+  private void setupLayeredPane() {
+    layeredPane.setPreferredSize(new Dimension(IMAGE_WIDTH, IMAGE_HEIGHT));
+    imageLabel.setBounds(0, 80, IMAGE_WIDTH, IMAGE_HEIGHT);
     imageLabel.setIcon(defaultImages[0]);
     layeredPane.add(imageLabel, Integer.valueOf(0)); // bottom
-    // set wantShowerLabel
-    wantShowerLabel.setIcon(getFitLabel("res/images/sad/dirty-bubble.png"));
-    wantShowerLabel.setBounds(0, 590, 100, 100);
-    wantShowerLabel.setVisible(false);
-    layeredPane.add(wantShowerLabel, Integer.valueOf(3));
-    // set hungryLabel
-    hungerLabel.setIcon(getFitLabel("res/images/sad/hungry-bubble.png"));
-    hungerLabel.setBounds(140, 590, 100, 100);
-    hungerLabel.setVisible(false);
-    layeredPane.add(hungerLabel, Integer.valueOf(3));
-    // set wantPlayLabel
-    wantPlayLabel.setIcon(getFitLabel("res/images/sad/play-bubble.png"));
-    wantPlayLabel.setBounds(270, 590, 100, 100);
-    wantPlayLabel.setVisible(false);
-    layeredPane.add(wantPlayLabel, Integer.valueOf(3));
-    // set sleepyLabel
-    sleepyLabel.setIcon(getFitLabel("res/images/sad/sleepy-bubble.png"));
-    sleepyLabel.setBounds(410, 590, 100, 100);
-    sleepyLabel.setVisible(false);
-    layeredPane.add(sleepyLabel, Integer.valueOf(3));
-    // set statusButton
+  }
+
+  private void setupBubbleHints() {
+    setupBubbleLabel(wantShowerLabel, "res/images/sad/dirty-bubble.png", 0);
+    setupBubbleLabel(hungerLabel, "res/images/sad/hungry-bubble.png", 140);
+    setupBubbleLabel(wantPlayLabel, "res/images/sad/play-bubble.png", 270);
+    setupBubbleLabel(sleepyLabel, "res/images/sad/sleepy-bubble.png", 410);
+  }
+
+  private void setupBubbleLabel(JLabel label, String path, int x) {
+    label.setIcon(getScaledIcon(path, BUBBLE_SIZE, BUBBLE_SIZE));
+    label.setBounds(x, 590, BUBBLE_SIZE, BUBBLE_SIZE);
+    label.setVisible(false);
+    layeredPane.add(label, Integer.valueOf(3));
+  }
+
+  private ImageIcon getScaledIcon(String path, int width, int height) {
+    ImageIcon rawIcon = new ImageIcon(path);
+    Image scaledImage = rawIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+    return new ImageIcon(scaledImage);
+  }
+
+  private void setupInfoLabels() {
+    // statusButton
+    styleButton(statusButton);
     statusButton.setBounds(15, 10, 100, 30);
-    statusButton.setBackground(buttonColor);
-    statusButton.setForeground(backgroundColor);
-    statusButton.setFont(buttonFont);
-    statusButton.setBorderPainted(false);
     layeredPane.add(statusButton, Integer.valueOf(1));
-    // set moodLabel
+
+    // moodLabel
     moodLabel.setBounds(15, 50, 100, 30);
     moodLabel.setText("MOOD");
     setInfoLabel(moodLabel);
     layeredPane.add(moodLabel, Integer.valueOf(2));
-    // set characterLabel
+
+    // characterLabel
     characterLabel.setBounds(130, 50, 120, 30);
     characterLabel.setText("CHARACTER");
     setInfoLabel(characterLabel);
     layeredPane.add(characterLabel, Integer.valueOf(3));
-    // set restartButton
+
+    // restart & step
+    styleButton(restartButton);
+    styleButton(stepButton);
     restartButton.setBounds(470, 10, 100, 30);
-    restartButton.setBackground(buttonColor);
-    restartButton.setForeground(backgroundColor);
-    restartButton.setFont(buttonFont);
-    restartButton.setBorderPainted(false);
-    layeredPane.add(restartButton, Integer.valueOf(1));
-    // set stepButton
     stepButton.setBounds(470, 50, 100, 30);
-    stepButton.setBackground(buttonColor);
-    stepButton.setForeground(backgroundColor);
-    stepButton.setFont(buttonFont);
-    stepButton.setBorderPainted(false);
+    layeredPane.add(restartButton, Integer.valueOf(1));
     layeredPane.add(stepButton, Integer.valueOf(1));
-    // set statusInfo
+
+    // statusInfo
     statusInfo.setBounds(30, 10, 530, 30);
     statusInfo.setHorizontalAlignment(SwingConstants.CENTER);
     statusInfo.setVerticalAlignment(SwingConstants.CENTER);
@@ -207,51 +222,64 @@ public class PetView extends JFrame {
     statusInfo.setOpaque(true);
     statusInfo.setVisible(false);
     layeredPane.add(statusInfo, Integer.valueOf(1));
+  }
 
-    // set progressBar
+  private void setupButtons() {
+    styleButton(showerButton);
+    styleButton(feedButton);
+    styleButton(playButton);
+    styleButton(sleepButton);
+    buttonPane.setLayout(new GridLayout(1, 4, 30, 0));
+    buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 40, 15, 40));
+    buttonPane.add(showerButton);
+    buttonPane.add(feedButton);
+    buttonPane.add(playButton);
+    buttonPane.add(sleepButton);
+  }
+
+  private void styleButton(JButton button) {
+    button.setBackground(buttonColor);
+    button.setForeground(backgroundColor);
+    button.setFont(buttonFont);
+    button.setBorderPainted(false);
+    button.setContentAreaFilled(false); // for macOS
+    button.setOpaque(true);             // for macOS
+    button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+  }
+
+  private void setupProgressBar() {
     progressBar.setMinimum(0);
     progressBar.setMaximum(100);
+    progressBar.setUI(new BasicProgressBarUI());
     progressBar.setStringPainted(true);
     progressBar.setBounds(100, 650, 400, 15);
     progressBar.setForeground(progressColor);
     progressBar.setBackground(barColor);
     progressBar.setBorderPainted(false);
+    progressBar.setOpaque(true);
     progressBar.setVisible(false);
-    layeredPane.add(progressBar, Integer.valueOf(2)); // top
-    // set gameStart button
-    setGameStartButton();
+    layeredPane.add(progressBar, Integer.valueOf(2));
+  }
 
-    // add layeredPane
-    this.getContentPane().add(layeredPane);
+  private void registerActionListeners() {
+    restartButton.addActionListener(resetListener);
+    showerButton.addActionListener(showerListener);
+    feedButton.addActionListener(feedListener);
+    playButton.addActionListener(playListener);
+    sleepButton.addActionListener(sleepListener);
+    stepButton.addActionListener(stepListener);
+    statusButton.addMouseListener(showAdapter);
+  }
 
-    // set buttonPane
-    showerButton.setBackground(buttonColor);
-    feedButton.setBackground(buttonColor);
-    playButton.setBackground(buttonColor);
-    sleepButton.setBackground(buttonColor);
-    showerButton.setForeground(backgroundColor);
-    feedButton.setForeground(backgroundColor);
-    playButton.setForeground(backgroundColor);
-    sleepButton.setForeground(backgroundColor);
-    showerButton.setFont(buttonFont);
-    feedButton.setFont(buttonFont);
-    playButton.setFont(buttonFont);
-    sleepButton.setFont(buttonFont);
-    showerButton.setBorderPainted(false);
-    feedButton.setBorderPainted(false);
-    playButton.setBorderPainted(false);
-    sleepButton.setBorderPainted(false);
-
-    // add buttons
-    buttonPane.add(showerButton);
-    buttonPane.add(feedButton);
-    buttonPane.add(playButton);
-    buttonPane.add(sleepButton);
-
-    buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 40, 15, 40));
-    this.getContentPane().add(buttonPane, BorderLayout.SOUTH);
-
-    buttonPane.setOpaque(false);
+  private void removeActionListeners() {
+    restartButton.removeActionListener(resetListener);
+    showerButton.removeActionListener(showerListener);
+    feedButton.removeActionListener(feedListener);
+    playButton.removeActionListener(playListener);
+    sleepButton.removeActionListener(sleepListener);
+    stepButton.removeActionListener(stepListener);
+    statusButton.removeMouseListener(showAdapter);
+    statusButton.removeMouseListener(hideAdapter);
   }
 
   private void setInfoLabel(JLabel moodLabel) {
@@ -268,13 +296,7 @@ public class PetView extends JFrame {
     gameStart.setVisible(false);
     controller.startGame();
     characterLabel.setText(controller.getPersonality().getName());
-    statusButton.addMouseListener(showAdapter);
-    restartButton.addActionListener(resetListener);
-    showerButton.addActionListener(showerListener);
-    feedButton.addActionListener(feedListener);
-    playButton.addActionListener(playListener);
-    sleepButton.addActionListener(sleepListener);
-    stepButton.addActionListener(stepListener);
+    registerActionListeners();
     setAllButtonsCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     defaultImageAnimation();
     moodTimer.start();
@@ -302,7 +324,7 @@ public class PetView extends JFrame {
     for (int i = 0; i < images.length; i++) {
       ImageIcon rawIcon = new ImageIcon("res/images/" + path + "/" + i + ".png");
       Image scaledImage = rawIcon.getImage().getScaledInstance(
-          600, 600, Image.SCALE_SMOOTH);
+          IMAGE_WIDTH, IMAGE_HEIGHT, Image.SCALE_SMOOTH);
       images[i] = new ImageIcon(scaledImage);
     }
   }
@@ -326,7 +348,7 @@ public class PetView extends JFrame {
     imageLabel.setIcon(images[0]);
     final int[] tickCount = {0};
 
-    Timer interactTimer = new Timer(500, e -> {
+    Timer interactTimer = new Timer(INTERACT_FRAME_DELAY, e -> {
       tickCount[0]++;
       interactImageIndex = (interactImageIndex + 1) % images.length;
       imageLabel.setIcon(images[interactImageIndex]);
@@ -388,20 +410,10 @@ public class PetView extends JFrame {
 
   private void reset() {
     gameStart.setVisible(true);
-    if (usingShowAdapter) {
-      statusButton.removeMouseListener(showAdapter);
-    } else {
-      statusButton.removeMouseListener(hideAdapter);
-    }
+    removeActionListeners();
     characterLabel.setText("CHARACTER");
     statusButton.setText("SHOW");
     statusInfo.setVisible(false);
-    restartButton.removeActionListener(resetListener);
-    showerButton.removeActionListener(showerListener);
-    feedButton.removeActionListener(feedListener);
-    playButton.removeActionListener(playListener);
-    sleepButton.removeActionListener(sleepListener);
-    stepButton.removeActionListener(stepListener);
     setAllButtonsCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     defaultTimer.stop();
     imageLabel.setIcon(defaultImages[0]);
@@ -414,13 +426,6 @@ public class PetView extends JFrame {
     String healthText = "HYGIENE: %d  HUNGER: %d  SOCIAL: %d  SLEEP: %d".formatted(
         health.getHygiene(), health.getHunger(), health.getSocial(), health.getSleep());
     statusInfo.setText(healthText);
-  }
-
-  private ImageIcon getFitLabel(String path) {
-    ImageIcon rawIcon = new ImageIcon(path);
-    Image scaledImage = rawIcon.getImage().getScaledInstance(
-        100, 100, Image.SCALE_SMOOTH);
-    return new ImageIcon(scaledImage);
   }
 
   private void afterInteract() {

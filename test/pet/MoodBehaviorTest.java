@@ -14,14 +14,14 @@ import pet.helper.mood.SadBehavior;
  */
 public class MoodBehaviorTest {
 
-  private Pet pet;
+  private PetOld pet;
 
   /**
    * Set up for the Pet and initialize the hunger, hygiene, social, and sleep.
    */
   @Before
   public void setUp() {
-    pet = new Pet();
+    pet = new PetOld();
 
     // Manually set to known values for controlled testing
     pet.adjustNeeds(-10, -10, -10, -10);

@@ -14,9 +14,9 @@ import pet.helper.mood.MoodEnum;
 /**
  * Unit tests for the {@link Pet} class.
  */
-public class PetTest {
+public class PetOldTest {
 
-  private Pet pet;
+  private PetOld pet;
   private ByteArrayOutputStream outputStream;
   private PrintStream originalOut;
 
@@ -25,7 +25,7 @@ public class PetTest {
    */
   @Before
   public void setUp() {
-    pet = new Pet();
+    pet = new PetOld();
     outputStream = new ByteArrayOutputStream();
     originalOut = System.out;
   }
