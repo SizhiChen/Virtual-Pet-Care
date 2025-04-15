@@ -11,6 +11,7 @@ import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URL;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -22,10 +23,38 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.plaf.basic.BasicProgressBarUI;
-
 import pet.helper.Action;
 import pet.helper.HealthStatus;
 import pet.helper.mood.MoodEnum;
+
+/**
+ * The {@code PetView} class is the graphical user interface for the virtual pet game.
+ * <p>
+ * It is built using Java Swing and follows the MVC (Model-View-Controller) design pattern.
+ * This view is responsible for rendering the pet, handling animations and interactions,
+ * displaying health status and mood, and providing controls to the user.
+ *
+ * <p>Main responsibilities include:
+ * <ul>
+ *   <li>Displaying the pet's current image, mood, and personality</li>
+ *   <li>Handling interactions such as feeding, playing, cleaning, and sleeping</li>
+ *   <li>Managing visual feedback such as status bars, hint bubbles, and animations</li>
+ *   <li>Connecting with {@link controller.PetController} to modify and retrieve game state</li>
+ * </ul>
+ *
+ * <p>UI features:
+ * <ul>
+ *   <li>Progress bar animations and timed actions</li>
+ *   <li>Layered pane to show pet and overlays</li>
+ *   <li>Game state reset and automatic updates via timers</li>
+ * </ul>
+ *
+ * <p>Images and resources must be available in the expected file structure under
+ * {@code images/}.
+ *
+ * @author You
+ * @version 1.0
+ */
 
 public class PetView extends JFrame {
 
@@ -107,6 +136,13 @@ public class PetView extends JFrame {
   private final ActionListener sleepListener = e -> interactEvent(sleepImages);
   private PetController controller;
 
+  /**
+   * Launches the game view and initializes all UI components, animations, and image resources.
+   * This method must be called to start the graphical interface.
+   *
+   * @param controller the {@link PetController} used to control the game logic and pet state
+   */
+
   public void playGame(PetController controller) {
     this.controller = controller;
 
@@ -122,6 +158,14 @@ public class PetView extends JFrame {
     setView();
     this.setVisible(true);
   }
+
+  /**
+   * Maps an image array (used during interaction) to a corresponding {@link Action}.
+   * This is used by the controller to determine which interaction the player initiated.
+   *
+   * @param images the image set associated with an interaction
+   * @return the corresponding {@link Action} (FEED, PLAY, CLEAN, or SLEEP)
+   */
 
   public Action getAction(ImageIcon[] images) {
     if (images == bathImages) {
@@ -166,10 +210,10 @@ public class PetView extends JFrame {
   }
 
   private void setupBubbleHints() {
-    setupBubbleLabel(wantShowerLabel, "res/images/sad/dirty-bubble.png", 0);
-    setupBubbleLabel(hungerLabel, "res/images/sad/hungry-bubble.png", 140);
-    setupBubbleLabel(wantPlayLabel, "res/images/sad/play-bubble.png", 270);
-    setupBubbleLabel(sleepyLabel, "res/images/sad/sleepy-bubble.png", 410);
+    setupBubbleLabel(wantShowerLabel, "/images/sad/dirty-bubble.png", 0);
+    setupBubbleLabel(hungerLabel, "/images/sad/hungry-bubble.png", 140);
+    setupBubbleLabel(wantPlayLabel, "/images/sad/play-bubble.png", 270);
+    setupBubbleLabel(sleepyLabel, "/images/sad/sleepy-bubble.png", 410);
   }
 
   private void setupBubbleLabel(JLabel label, String path, int x) {
@@ -180,7 +224,13 @@ public class PetView extends JFrame {
   }
 
   private ImageIcon getScaledIcon(String path, int width, int height) {
-    ImageIcon rawIcon = new ImageIcon(path);
+    // Path should start with "/" and point inside /resources
+    URL url = getClass().getResource(path);
+    if (url == null) {
+      System.err.println("Image not found: " + path);
+      return new ImageIcon(); // return empty icon if not found
+    }
+    ImageIcon rawIcon = new ImageIcon(url);
     Image scaledImage = rawIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
     return new ImageIcon(scaledImage);
   }
@@ -304,9 +354,13 @@ public class PetView extends JFrame {
   }
 
   private void setGameStartButton() {
-    ImageIcon rowIcon = new ImageIcon("res/images/start.png");
-    Image scaledImage = rowIcon.getImage().getScaledInstance(
-        400, 150, Image.SCALE_SMOOTH);
+    URL url = getClass().getResource("/images/start.png");
+    if (url == null) {
+      System.err.println("Start image not found!");
+      return;
+    }
+    ImageIcon rawIcon = new ImageIcon(url);
+    Image scaledImage = rawIcon.getImage().getScaledInstance(400, 150, Image.SCALE_SMOOTH);
     gameStart.setBounds(100, 250, 400, 150);
     ImageIcon image = new ImageIcon(scaledImage);
     gameStart.setIcon(image);
@@ -320,14 +374,22 @@ public class PetView extends JFrame {
     layeredPane.add(gameStart, Integer.valueOf(3));
   }
 
-  private void setImages(ImageIcon[] images, String path) {
+
+  private void setImages(ImageIcon[] images, String resourceFolder) {
     for (int i = 0; i < images.length; i++) {
-      ImageIcon rawIcon = new ImageIcon("res/images/" + path + "/" + i + ".png");
-      Image scaledImage = rawIcon.getImage().getScaledInstance(
-          IMAGE_WIDTH, IMAGE_HEIGHT, Image.SCALE_SMOOTH);
+      String path = String.format("/images/%s/%d.png", resourceFolder, i);
+      URL url = getClass().getResource(path);
+      if (url == null) {
+        System.err.println("Image not found: " + path);
+        images[i] = new ImageIcon(); // fallback
+        continue;
+      }
+      ImageIcon rawIcon = new ImageIcon(url);
+      Image scaledImage = rawIcon.getImage().getScaledInstance(IMAGE_WIDTH, IMAGE_HEIGHT, Image.SCALE_SMOOTH);
       images[i] = new ImageIcon(scaledImage);
     }
   }
+
 
   private void defaultImageAnimation() {
     imageLabel.setIcon(defaultImages[0]);
@@ -442,9 +504,13 @@ public class PetView extends JFrame {
 
   private void gameOverModeSetting() {
     setAllButtonsEnabled(true);
-    ImageIcon rawIcon = new ImageIcon("res/images/gameOver.png");
-    Image scaledImage = rawIcon.getImage().getScaledInstance(
-        600, 600, Image.SCALE_SMOOTH);
+    URL url = getClass().getResource("/images/gameOver.png");
+    if (url == null) {
+      System.err.println("gameOver.png not found!");
+      return;
+    }
+    ImageIcon rawIcon = new ImageIcon(url);
+    Image scaledImage = rawIcon.getImage().getScaledInstance(600, 600, Image.SCALE_SMOOTH);
     ImageIcon image = new ImageIcon(scaledImage);
     defaultTimer.stop();
     stepTimer.stop();
@@ -455,6 +521,7 @@ public class PetView extends JFrame {
     sleepButton.removeActionListener(sleepListener);
     restartButton.setEnabled(true);
   }
+
 
   private void happyModeSetting() {
     setAllButtonsEnabled(true);

@@ -1,7 +1,6 @@
 import java.util.Scanner;
 import pet.PetOld;
 import pet.helper.Action;
-import pet.PetInterface;
 
 /**
  * The MyPetMain class is the entry point for the Virtual Pet Care application.

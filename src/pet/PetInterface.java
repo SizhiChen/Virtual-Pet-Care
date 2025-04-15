@@ -6,69 +6,123 @@ import pet.helper.mood.MoodEnum;
 import pet.helper.personality.Personality;
 
 /**
- * The {@code PetInterface} defines the contract for interacting with a virtual pet model.
+ * The {@code PetInterface} defines the contract for the virtual pet model.
  * <p>
- * Implementing classes must support time progression, interaction with actions,
- * and provide access to the pet's mood and health status.
+ * Implementing classes must support:
+ * <ul>
+ *   <li>Initialization of game state</li>
+ *   <li>Time progression and mood updates</li>
+ *   <li>User interactions through actions</li>
+ *   <li>Health and mood queries</li>
+ *   <li>Need-based checks (e.g., hunger, sleepiness)</li>
+ * </ul>
  * <p>
- * This interface is used by external components (e.g., controllers or views)
- * to communicate with the pet model in a consistent and encapsulated way.
+ * This interface allows external components like controllers or views
+ * to interact with the pet model in a consistent and encapsulated way.
  */
 public interface PetInterface {
 
   /**
-   * Initializes the pet's needs and sets its initial mood.
-   * This must be called before using the pet.
+   * Initializes the pet's state, including all needs, mood, and status flags.
+   * Must be called before using other functionality.
    */
   void startGame();
 
   /**
    * Advances the pet’s internal state by one unit of time.
-   * This typically causes the pet's needs to degrade based on its current mood.
-   * Can also trigger mood changes or health consequences over time.
+   * This typically degrades the pet's needs and may alter mood or trigger death.
    */
   void step();
 
   /**
-   * Interacts with the pet using the specified action (e.g., feeding, playing).
-   * Each action affects the pet’s internal needs and potentially its mood.
+   * Applies an interaction (such as feeding, playing, cleaning, or sleeping) to the pet.
+   * The pet’s needs are adjusted based on the interaction and personality.
    *
-   * @param action the {@link Action} to apply to the pet
+   * @param action the {@link Action} to apply
    */
   void interactWith(Action action);
 
   /**
-   * Retrieves the pet’s current health status in an immutable form.
+   * Retrieves the current health status of the pet as a read-only object.
    *
-   * @return a {@link HealthStatus} object representing the pet’s needs
+   * @return a {@link HealthStatus} snapshot representing all core needs
    */
   HealthStatus getHealth();
 
   /**
-   * Gets the current mood of the pet.
+   * Gets the pet's current mood (e.g., HAPPY or SAD).
    *
-   * @return the current {@link MoodEnum} of the pet
+   * @return the pet’s {@link MoodEnum}
    */
   MoodEnum getMood();
 
+  /**
+   * Returns the personality assigned to this pet, which
+   * affects how it responds to time and actions.
+   *
+   * @return the current {@link Personality}
+   */
   Personality getPersonality();
 
   /**
-   * Sets the mood of the pet manually. This may also change how it behaves over time.
+   * Manually sets the pet’s mood, which can influence its behavior and responses.
    *
-   * @param mood the new {@link MoodEnum} to assign
+   * @param mood the {@link MoodEnum} to set
    */
   void setMood(MoodEnum mood);
 
+  /**
+   * Sets the personality of the pet manually.
+   * This can be used for testing or deterministic personality assignment.
+   *
+   * @param personality the {@link Personality} to assign
+   */
+  void setPersonality(Personality personality);
+
+  /**
+   * Returns whether the pet is alive. If any need reaches zero, the pet is considered dead.
+   *
+   * @return {@code true} if the pet is alive; {@code false} if not
+   */
   boolean isAlive();
 
+  /**
+   * Checks whether the pet currently needs a shower (hygiene at or below 20).
+   *
+   * @return {@code true} if hygiene is low
+   */
   boolean needShower();
 
+  /**
+   * Checks whether the pet currently needs to eat (hunger at or below 20).
+   *
+   * @return {@code true} if hunger is low
+   */
   boolean needFeed();
 
+  /**
+   * Checks whether the pet currently needs to play (social at or below 20).
+   *
+   * @return {@code true} if social is low
+   */
   boolean needPlay();
 
+  /**
+   * Checks whether the pet currently needs sleep (sleep at or below 20).
+   *
+   * @return {@code true} if sleep is low
+   */
   boolean needSleep();
 
+  /**
+   * Adjusts the pet’s needs by the specified amounts.
+   * This is typically used internally by personalities and behaviors.
+   * Values are clamped between 0 and 100.
+   *
+   * @param hungerDelta  change in hunger value
+   * @param hygieneDelta change in hygiene value
+   * @param socialDelta  change in social value
+   * @param sleepDelta   change in sleep value
+   */
   void adjustNeeds(int hungerDelta, int hygieneDelta, int socialDelta, int sleepDelta);
 }

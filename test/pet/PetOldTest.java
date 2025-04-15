@@ -12,7 +12,7 @@ import pet.helper.HealthStatus;
 import pet.helper.mood.MoodEnum;
 
 /**
- * Unit tests for the {@link Pet} class.
+ * Unit tests for the {@link PetOld} class.
  */
 public class PetOldTest {
 
